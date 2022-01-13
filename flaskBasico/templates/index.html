@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}
+    {{ session['username'] }}
+{% endblock %}
+{% block content %}
+<!-- usando variables recibidas en el render -->
+Hola, {{ gente }}. Estais en Flask.
+
+<!-- se puede acceder al método url_for -->
+<a href="{{ url_for('subir') }}">Subir archivo</a>
+{% endblock %}

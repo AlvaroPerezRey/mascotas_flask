@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block title %}
+    {{ session['username'] }}
+{% endblock %}
+{% block content %}
+<form method="POST" enctype="multipart/form-data" action="">
+    <input type="file" name="archivo">
+    <input type="submit" value="Subir">
+</form>
+{% endblock %}
