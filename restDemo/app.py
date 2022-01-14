@@ -4,7 +4,7 @@ from model import init_db
 
 app = Flask(__name__)
 init_db(app)
-app.register_blueprint(api_user, url_prefix="/api/")
+app.register_blueprint(api_user, url_prefix="/api/user/")
 
 @app.route("/")
 def home():

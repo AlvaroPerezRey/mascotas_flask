@@ -4,10 +4,10 @@ from model import User, db, UserSchema
 
 
 blueprint = Blueprint('users', __name__)
-api_user = Api(blueprint)
+api_user = Api(blueprint, doc="/docs")
 
 
-@api_user.route("/user/<user_id>")
+@api_user.route("/<user_id>")
 class UserController(Resource):
     def get(self, user_id):
         user = User.query.get_or_404(user_id)
@@ -27,7 +27,7 @@ class UserController(Resource):
         return UserSchema().dump(new_user)
 
 
-@api_user.route("/user/")
+@api_user.route("/")
 class UserListController(Resource):
     def get(self):
         return UserSchema(many=True).dump(User.query.all())
