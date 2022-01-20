@@ -1,4 +1,5 @@
 from flask import Blueprint, request
+import flask_praetorian
 from flask_restx import abort, Api, Resource
 from model import User, db, UserSchema
 
@@ -29,6 +30,7 @@ class UserController(Resource):
 
 @api_user.route("/")
 class UserListController(Resource):
+    @flask_praetorian.auth_required
     def get(self):
         return UserSchema(many=True).dump(User.query.all())
 
