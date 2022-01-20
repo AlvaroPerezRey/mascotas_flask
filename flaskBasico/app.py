@@ -51,6 +51,11 @@ def get_alumnado(nombre):
         abort(404, f"No hay alumnos que contengan: {nombre}")
     return jsonify()
 
+@app.route("/prueba/")
+@auth
+def prueba():
+    return redirect(url_for("get_alumnado", nombre="a"))
+
 # se puede indicar una lista de métodos aceptados en la ruta
 @app.route('/nuevo/', methods=['POST'])
 @auth
