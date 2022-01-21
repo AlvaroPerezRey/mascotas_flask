@@ -18,8 +18,10 @@ def init_db(app, guard):
 def seed_db(app, guard):
     with app.app_context():
         users = [
-            User(username="juan", email="juan@a.a", hashed_password=guard.hash_password("pestillo"), roles="admin"),
+            User(username="juan", email="juan@a.a", hashed_password=guard.hash_password("pestillo"), roles="editor"),
             User(username="maria", email="maria@a.a", hashed_password=guard.hash_password("pestillo"), roles="admin"),
+            User(username="ana", email="ana@a.a", hashed_password=guard.hash_password("pestillo"), roles="editor, admin"),
+            User(username="selena", email="selena@a.a", hashed_password=guard.hash_password("pestillo"), roles="user"),
         ]
         owners = [ Owner(name="Juan Pérez", user=users[0]),
                    Owner(name="María López", user=users[1])

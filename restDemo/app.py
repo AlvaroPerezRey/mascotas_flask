@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request
 import flask_praetorian
+
 from model import init_db, User
 
 # import blueprints
@@ -16,6 +17,7 @@ app.config["JWT_ACCESS_LIFESPAN"] = {"hours": 24}
 app.config["JWT_REFRESH_LIFESPAN"] = {"days": 30}
 guard.init_app(app, User)
 init_db(app, guard)
+
 
 # register blueprints
 app.register_blueprint(api_user, url_prefix="/api/user/")

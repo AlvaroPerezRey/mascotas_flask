@@ -1,3 +1,4 @@
+import flask_praetorian
 from flask import Blueprint, request
 from flask_restx import abort, Api, Resource
 from model import Owner, db, OwnerSchema
@@ -5,20 +6,24 @@ from model import Owner, db, OwnerSchema
 
 blueprint = Blueprint('owners', __name__)
 api_owner = Api(blueprint, doc="/docs")
+flask_praetorian.PraetorianError.register_error_handler_with_flask_restx(api_owner)
 
 
 @api_owner.route("/<owner_id>")
 class OwnerController(Resource):
+    @flask_praetorian.auth_required
     def get(self, owner_id):
         owner = Owner.query.get_or_404(owner_id)
         return OwnerSchema().dump(owner)
 
+    @flask_praetorian.roles_accepted("admin", "editor")
     def delete(self, owner_id):
         owner = Owner.query.get_or_404(owner_id)
         db.session.delete(owner)
         db.session.commit()
         return f"Deleted owner {owner_id}", 204
 
+    @flask_praetorian.roles_accepted("admin", "editor")
     def put(self, owner_id):
         new_owner = OwnerSchema().load(request.json)
         if str(new_owner.id) != owner_id:
@@ -29,9 +34,11 @@ class OwnerController(Resource):
 
 @api_owner.route("/")
 class OwnerListController(Resource):
+    @flask_praetorian.auth_required
     def get(self):
         return OwnerSchema(many=True).dump(Owner.query.all())
 
+    @flask_praetorian.roles_accepted("admin", "editor")
     def post(self):
         owner = OwnerSchema().load(request.json)
         db.session.add(owner)
