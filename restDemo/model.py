@@ -4,6 +4,7 @@ from sqlalchemy_utils import database_exists
 
 db = SQLAlchemy()
 
+
 # db initialization (no change)
 def init_db(app, guard):
     app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{app.root_path}/flask.db"
@@ -17,11 +18,24 @@ def init_db(app, guard):
 # seeding database with test data
 def seed_db(app, guard):
     with app.app_context():
+        roles = [
+            Role(name="admin"),
+            Role(name="editor"),
+            Role(name="user")
+        ]
         users = [
-            User(username="juan", email="juan@a.a", hashed_password=guard.hash_password("pestillo"), roles="editor"),
-            User(username="maria", email="maria@a.a", hashed_password=guard.hash_password("pestillo"), roles="admin"),
-            User(username="ana", email="ana@a.a", hashed_password=guard.hash_password("pestillo"), roles="editor, admin"),
-            User(username="selena", email="selena@a.a", hashed_password=guard.hash_password("pestillo"), roles="user"),
+            User(username="juan", email="juan@a.a",
+                 hashed_password=guard.hash_password("pestillo"),
+                 roles=[roles[1]]),
+            User(username="maria", email="maria@a.a",
+                 hashed_password=guard.hash_password("pestillo"),
+                 roles=[roles[0]]),
+            User(username="ana", email="ana@a.a",
+                 hashed_password=guard.hash_password("pestillo"),
+                 roles=[roles[0], roles[1]]),
+            User(username="selena", email="selena@a.a",
+                 hashed_password=guard.hash_password("pestillo"),
+                 roles=[roles[2]]),
         ]
         owners = [ Owner(name="Juan Pérez", user=users[0]),
                    Owner(name="María López", user=users[1])
@@ -39,6 +53,14 @@ def seed_db(app, guard):
             db.session.add(pet)
         db.session.commit()
 
+
+# table for N:M relationship
+roles_users = db.Table('roles_users',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+    db.Column('role_id', db.Integer, db.ForeignKey('role.id'), primary_key=True)
+)
+
+
 # classes for model entities
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -49,7 +71,9 @@ class User(db.Model):
     #user = db.relationship("Owner", backref=db.backref("user", uselist=False))
     # from praetorian example
     hashed_password = db.Column(db.Text)
-    roles = db.Column(db.Text)
+    #roles = db.Column(db.Text)
+    # M:N relationship
+    roles = db.relationship('Role', secondary=roles_users)
     is_active = db.Column(db.Boolean, default=True, server_default="true")
 
     @property
@@ -71,10 +95,11 @@ class User(db.Model):
         attribute or property that provides a list of strings that describe the roles
         attached to the user instance
         """
-        try:
-            return self.roles.split(",")
-        except Exception:
-            return []
+        # try:
+        #     return self.roles.split(",")
+        # except Exception:
+        #     return []
+        return [role.name for role in self.roles]
 
     @property
     def password(self):
@@ -114,6 +139,14 @@ class User(db.Model):
 
     def __repr__(self):
         return f"<User {self.username}>"
+
+
+class Role(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), unique=False, nullable=False)
+
+    def __repr__(self):
+        return f"<Role {self.name}>"
 
 
 class Owner(db.Model):
@@ -160,6 +193,13 @@ class OwnerSchema(SQLAlchemyAutoSchema):
 class PetSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Pet
+        include_relationships = True
+        load_instance = True
+        sqla_session = db.session
+
+class RoleSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Role
         include_relationships = True
         load_instance = True
         sqla_session = db.session
