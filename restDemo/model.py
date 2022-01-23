@@ -2,22 +2,28 @@ from flask_sqlalchemy import SQLAlchemy
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 from sqlalchemy_utils import database_exists
 
+# instantiate SQLAlchemy object
 db = SQLAlchemy()
 
 
-# db initialization (no change)
+# db initialization
 def init_db(app, guard):
     app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{app.root_path}/flask.db"
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)
     if not database_exists(app.config['SQLALCHEMY_DATABASE_URI']):
+        # if there is no database file
+        # migrate model
         db.create_all(app=app)
+        # seed data
         seed_db(app, guard)
 
 
 # seeding database with test data
 def seed_db(app, guard):
+    # when using app var in function, we need to use app_context
     with app.app_context():
+        # lists of objects for db seed
         roles = [
             Role(name="admin"),
             Role(name="editor"),
@@ -45,12 +51,14 @@ def seed_db(app, guard):
                  Pet(name="Nala", species="Perro", breed="Galgo", owner=owners[1]),
                  Pet(name="Mora", species="Gato", breed="Egipcio", owner=owners[1]),
                  ]
+        # add data from lists
         for user in users:
             db.session.add(user)
         for owner in owners:
             db.session.add(owner)
         for pet in pets:
             db.session.add(pet)
+        # commit changes in database
         db.session.commit()
 
 
@@ -63,19 +71,25 @@ roles_users = db.Table('roles_users',
 
 # classes for model entities
 class User(db.Model):
+    """
+    User entity
+
+    Store user data
+    """
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     ## se puede declarar la relación en ambos lados usando backref
     ## si se usara back_populates es necesario declararla en ambos lados
     #user = db.relationship("Owner", backref=db.backref("user", uselist=False))
+
     # from praetorian example
     hashed_password = db.Column(db.Text)
-    #roles = db.Column(db.Text)
     # M:N relationship
     roles = db.relationship('Role', secondary=roles_users)
     is_active = db.Column(db.Boolean, default=True, server_default="true")
 
+    # this enable this entity as user entity in praetorian
     @property
     def identity(self):
         """
@@ -137,11 +151,17 @@ class User(db.Model):
     def is_valid(self):
         return self.is_active
 
+    # specify string for repr
     def __repr__(self):
         return f"<User {self.username}>"
 
 
 class Role(db.Model):
+    """
+    Role entity
+
+    Store roles data
+    """
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), unique=False, nullable=False)
 
@@ -150,6 +170,11 @@ class Role(db.Model):
 
 
 class Owner(db.Model):
+    """
+    Owner entity
+
+    Store owner data
+    """
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), unique=False, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
@@ -161,6 +186,11 @@ class Owner(db.Model):
 
 
 class Pet(db.Model):
+    """
+    Pet entity
+
+    Store pet data
+    """
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), unique=False, nullable=False)
     species = db.Column(db.String(80), unique=False, nullable=True)
@@ -176,6 +206,7 @@ class Pet(db.Model):
 # Marshmallow schemas definition
 class UserSchema(SQLAlchemyAutoSchema):
     class Meta:
+        # model class for the schema
         model = User
         include_relationships = True
         load_instance = True
@@ -196,6 +227,7 @@ class PetSchema(SQLAlchemyAutoSchema):
         include_relationships = True
         load_instance = True
         sqla_session = db.session
+
 
 class RoleSchema(SQLAlchemyAutoSchema):
     class Meta:

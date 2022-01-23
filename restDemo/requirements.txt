@@ -3,4 +3,5 @@ flask-restx
 Flask-SQLAlchemy
 SQLAlchemy-Utils
 marshmallow-sqlalchemy
-
+flask-praetorian
+Authlib
