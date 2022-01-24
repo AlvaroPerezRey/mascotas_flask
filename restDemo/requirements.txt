@@ -5,3 +5,4 @@ SQLAlchemy-Utils
 marshmallow-sqlalchemy
 flask-praetorian
 Authlib
+requests

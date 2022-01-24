@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, url_for
 from authlib.integrations.flask_client import OAuth
 import flask_praetorian
 
@@ -71,7 +71,7 @@ def login():
 @app.route('/github')
 def oauth_login():
     github = oauth.create_client('github')
-    redirect_uri = 'http://localhost:5000/authorize'
+    redirect_uri = url_for('authorize', _external=True)
     return github.authorize_redirect(redirect_uri)
 
 
