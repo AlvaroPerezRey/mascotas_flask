@@ -6,8 +6,14 @@ from sqlalchemy_utils import database_exists
 db = SQLAlchemy()
 
 
-# db initialization
 def init_db(app, guard):
+    """
+    Initializes database
+
+    :param app: flask app
+    :param guard: praetorian object for password hashing if seeding needed
+    """
+    # database configuration
     app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{app.root_path}/flask.db"
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)
@@ -19,11 +25,16 @@ def init_db(app, guard):
         seed_db(app, guard)
 
 
-# seeding database with test data
 def seed_db(app, guard):
+    """
+    Seeds database with test data
+
+    :param app: flask app
+    :param guard: praetorian object for password hashing
+    """
     # when using app var in function, we need to use app_context
     with app.app_context():
-        # lists of objects for db seed
+        # lists of model objects for db seed
         roles = [
             Role(name="admin"),
             Role(name="editor"),
