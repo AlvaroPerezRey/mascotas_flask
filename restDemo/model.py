@@ -124,6 +124,7 @@ class User(db.Model):
         attribute or property that provides the hashed password assigned to the user
         instance
         """
+
         return self.hashed_password
 
     @classmethod
