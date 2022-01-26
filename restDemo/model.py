@@ -13,9 +13,6 @@ def init_db(app, guard):
     :param app: flask app
     :param guard: praetorian object for password hashing if seeding needed
     """
-    # database configuration
-    app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{app.root_path}/flask.db"
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db.init_app(app)
     if not database_exists(app.config['SQLALCHEMY_DATABASE_URI']):
         # if there is no database file
@@ -54,14 +51,16 @@ def seed_db(app, guard):
                  hashed_password=guard.hash_password("pestillo"),
                  roles=[roles[2]]),
         ]
-        owners = [ Owner(name="Juan Pérez", user=users[0]),
-                   Owner(name="María López", user=users[1])
-                 ]
-        pets = [ Pet(name="Estrella", species="Perro", breed="Caniche", owner=owners[0]),
-                 Pet(name="Petardo", species="Perro", breed="Galgo", owner=owners[1]),
-                 Pet(name="Nala", species="Perro", breed="Galgo", owner=owners[1]),
-                 Pet(name="Mora", species="Gato", breed="Egipcio", owner=owners[1]),
-                 ]
+        owners = [
+            Owner(name="Juan Pérez", user=users[0]),
+            Owner(name="María López", user=users[1]),
+        ]
+        pets = [
+            Pet(name="Estrella", species="Perro", breed="Caniche", owner=owners[0]),
+            Pet(name="Petardo", species="Perro", breed="Galgo", owner=owners[1]),
+            Pet(name="Nala", species="Perro", breed="Galgo", owner=owners[1]),
+            Pet(name="Mora", species="Gato", breed="Egipcio", owner=owners[1]),
+        ]
         # add data from lists
         for user in users:
             db.session.add(user)
@@ -75,9 +74,9 @@ def seed_db(app, guard):
 
 # table for N:M relationship
 roles_users = db.Table('roles_users',
-    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
-    db.Column('role_id', db.Integer, db.ForeignKey('role.id'), primary_key=True)
-)
+                       db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+                       db.Column('role_id', db.Integer, db.ForeignKey('role.id'), primary_key=True)
+                       )
 
 
 # classes for model entities
@@ -90,9 +89,9 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    ## se puede declarar la relación en ambos lados usando backref
-    ## si se usara back_populates es necesario declararla en ambos lados
-    #user = db.relationship("Owner", backref=db.backref("user", uselist=False))
+    # se puede declarar la relación en ambos lados usando backref
+    # si se usara back_populates es necesario declararla en ambos lados
+    # user = db.relationship("Owner", backref=db.backref("user", uselist=False))
 
     # from praetorian example
     hashed_password = db.Column(db.Text)
@@ -150,7 +149,7 @@ class User(db.Model):
         return cls.query.filter_by(username=username).one_or_none()
 
     @classmethod
-    def identify(cls, id):
+    def identify(cls, id_user):
         """
         *Required Method*
 
@@ -158,7 +157,7 @@ class User(db.Model):
         class method that takes a single ``id`` argument and returns user instance if
         there is one that matches or ``None`` if there is not.
         """
-        return cls.query.get(id)
+        return cls.query.get(id_user)
 
     def is_valid(self):
         return self.is_active

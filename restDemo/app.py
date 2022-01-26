@@ -4,20 +4,21 @@ import flask_praetorian
 
 from model import init_db, User
 
-# import blueprints
-from views.users import blueprint as api_user
-from views.owners import blueprint as api_owner
-from views.pets import blueprint as api_pet
+# import blueprint
+from views import blueprint as api
 
 # instantiate praetorian object
 guard = flask_praetorian.Praetorian()
 # TODO: cors config
 
+# instantiate flask app
 app = Flask(__name__)
+# get configuration parameters
+app.config.from_object('config')
 
 # instantiate oauth object
 oauth = OAuth(app)
-app.config.from_object('config')
+
 # oauth init
 oauth.register(
     name='github',
@@ -29,11 +30,6 @@ oauth.register(
     client_kwargs={'scope': 'user:email'},
 )
 
-
-# praetorian config
-app.config["SECRET_KEY"] = "latch"
-app.config["JWT_ACCESS_LIFESPAN"] = {"hours": 24}
-app.config["JWT_REFRESH_LIFESPAN"] = {"days": 30}
 # praetorian init
 guard.init_app(app, User)
 
@@ -41,11 +37,8 @@ guard.init_app(app, User)
 init_db(app, guard)
 
 
-# register blueprints
-app.register_blueprint(api_user, url_prefix="/api/user/")
-app.register_blueprint(api_owner, url_prefix="/api/owner/")
-app.register_blueprint(api_pet, url_prefix="/api/pet/")
-
+# register blueprint
+app.register_blueprint(api, url_prefix="/api/")
 
 @app.route("/")
 def home():
@@ -126,4 +119,6 @@ def authorize():
 
 
 if __name__ == '__main__':
+    # starts app
+    # in production: debug=False
     app.run(debug=True)

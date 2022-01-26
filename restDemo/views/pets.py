@@ -1,13 +1,13 @@
 import flask_praetorian
-from flask import Blueprint, request
-from flask_restx import abort, Api, Resource
+from flask import request
+from flask_restx import abort, Resource, Namespace
+
 from model import Pet, db, PetSchema
 
+# namespace declaration
+api_pet = Namespace("Pets", "Pets management")
 
-blueprint = Blueprint('pets', __name__)
-api_pet = Api(blueprint, doc="/docs")
-flask_praetorian.PraetorianError.register_error_handler_with_flask_restx(api_pet)
-
+# Controller detailed comments in: users.py
 
 @api_pet.route("/<pet_id>")
 class PetController(Resource):
@@ -16,6 +16,7 @@ class PetController(Resource):
         pet = Pet.query.get_or_404(pet_id)
         return PetSchema().dump(pet)
 
+    # roles accepted (user with one of these roles)
     @flask_praetorian.roles_accepted("admin", "editor")
     def delete(self, pet_id):
         pet = Pet.query.get_or_404(pet_id)

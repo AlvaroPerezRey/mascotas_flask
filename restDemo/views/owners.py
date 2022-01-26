@@ -1,12 +1,13 @@
 import flask_praetorian
-from flask import Blueprint, request
-from flask_restx import abort, Api, Resource
+from flask import request
+from flask_restx import abort, Resource, Namespace
+
 from model import Owner, db, OwnerSchema
 
+# namespace declaration
+api_owner = Namespace("Owners", "Owners management")
 
-blueprint = Blueprint('owners', __name__)
-api_owner = Api(blueprint, doc="/docs")
-flask_praetorian.PraetorianError.register_error_handler_with_flask_restx(api_owner)
+# Controller detailed comments in: users.py
 
 
 @api_owner.route("/<owner_id>")
