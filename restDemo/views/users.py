@@ -16,6 +16,7 @@ class UserController(Resource):
     def get(self, user_id):
         # gets one user by id
         user = User.query.get_or_404(user_id)
+        # UserSchema() is an object used for ORM objects serialization
         return UserSchema().dump(user)
 
     # roles required (if several roles, user must have every role)
