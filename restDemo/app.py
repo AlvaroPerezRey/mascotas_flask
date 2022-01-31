@@ -14,6 +14,7 @@ guard = flask_praetorian.Praetorian()
 # instantiate flask app
 app = Flask(__name__)
 # get configuration parameters
+
 app.config.from_object('config')
 
 # instantiate oauth object

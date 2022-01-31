@@ -1,5 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
+from marshmallow_sqlalchemy import SQLAlchemyAutoSchema, fields
 from sqlalchemy_utils import database_exists
 
 # instantiate SQLAlchemy object
@@ -55,6 +55,10 @@ def seed_db(app, guard):
             Owner(name="Juan Pérez", user=users[0]),
             Owner(name="María López", user=users[1]),
         ]
+        players = [
+            Player(name="Ana Lomas", user=users[2]),
+            Player(name="Gema León", user=users[3]),
+        ]
         pets = [
             Pet(name="Estrella", species="Perro", breed="Caniche", owner=owners[0]),
             Pet(name="Petardo", species="Perro", breed="Galgo", owner=owners[1]),
@@ -68,6 +72,8 @@ def seed_db(app, guard):
             db.session.add(owner)
         for pet in pets:
             db.session.add(pet)
+        for player in players:
+            db.session.add(player)
         # commit changes in database
         db.session.commit()
 
@@ -195,6 +201,20 @@ class Owner(db.Model):
     def __repr__(self):
         return f"<User {self.name}>"
 
+class Player(db.Model):
+    """
+    Owner entity
+
+    Store owner data
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(80), unique=False, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    # TODO: test cascade behaviour
+    user = db.relationship("User", backref=db.backref("player", uselist=False))
+
+    def __repr__(self):
+        return f"<User {self.name}>"
 
 class Pet(db.Model):
     """
@@ -224,6 +244,19 @@ class UserSchema(SQLAlchemyAutoSchema):
         sqla_session = db.session
 
 
+class RoleSchema(SQLAlchemyAutoSchema):
+    class Meta:
+        model = Role
+        include_relationships = True
+        load_instance = True
+        sqla_session = db.session
+
+    users = fields.Nested(UserSchema, many=True)
+
+
+UserSchema.roles = fields.Nested(RoleSchema, many=True)
+
+
 class OwnerSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = Owner
@@ -240,9 +273,9 @@ class PetSchema(SQLAlchemyAutoSchema):
         sqla_session = db.session
 
 
-class RoleSchema(SQLAlchemyAutoSchema):
+class PlayerSchema(SQLAlchemyAutoSchema):
     class Meta:
-        model = Role
+        model = Player
         include_relationships = True
         load_instance = True
         sqla_session = db.session

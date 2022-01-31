@@ -5,6 +5,7 @@ from app import app
 
 ###
 # database configuration
+# TODO: config tests
 SQLALCHEMY_DATABASE_URI = f"sqlite:///{app.root_path}/flask.db"
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 

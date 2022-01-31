@@ -6,6 +6,7 @@ import flask_praetorian
 from .owners import api_owner
 from .pets import api_pet
 from .users import api_user
+from .players import api_player
 
 # one blueprint (Flask) for all the resources
 blueprint = Blueprint('PetZilla', __name__)
@@ -16,3 +17,4 @@ flask_praetorian.PraetorianError.register_error_handler_with_flask_restx(api_pet
 api.add_namespace(api_user, path='/user')
 api.add_namespace(api_pet, path='/pet')
 api.add_namespace(api_owner, path='/owner')
+api.add_namespace(api_player, path='/player')
