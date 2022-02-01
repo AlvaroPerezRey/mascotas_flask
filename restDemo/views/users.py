@@ -1,8 +1,9 @@
 import flask_praetorian
-from flask import request
+from flask import request, jsonify
 from flask_restx import abort, Resource, Namespace
 
-from model import User, db, UserSchema
+from sqlalchemy.sql import text
+from model import User, Role, db, UserSchema
 
 # namespace declaration
 api_user = Namespace("Users", "Users management")
@@ -58,3 +59,18 @@ class UserListController(Resource):
         db.session.add(user)
         db.session.commit()
         return UserSchema().dump(user), 201
+
+
+@api_user.route("/roles")
+class RolesListController(Resource):
+    @flask_praetorian.auth_required
+    def get(self):
+        # using custom SQL
+        statement = text("""
+            select role.name, count(user.id) as members from user
+                join roles_users ru on user.id = ru.user_id
+                join role on ru.role_id = role.id
+                group by role.name
+            """)
+        result = db.session.execute(statement)
+        return jsonify({r['name']: r['members'] for r in result})

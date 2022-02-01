@@ -1,17 +1,29 @@
 import pytest
-import os
-import tempfile
+from app import create_app
+from werkzeug.datastructures import Headers
 
-testing = True
-from app import app
 
 @pytest.fixture
 def client():
-    db_fd, db_path = tempfile.mkstemp()
-    #app = create_app({'TESTING': True, 'DATABASE': db_path})
+    app = create_app('config_tests.py')
 
     with app.test_client() as client:
         yield client
 
-    os.close(db_fd)
-    os.unlink(db_path)
+
+def test_prueba(client):
+    rv = client.get('/')
+    assert "Here is the" in rv.get_data(as_text=True)
+
+
+def test_login(client):
+    rv = client.post('/login', json={'username': 'selena', 'password': 'pestillo'})
+    rsp = rv.get_json()
+    assert 'access_token' in rsp.keys()
+
+    headers = Headers()
+    headers.add('Authorization', f"Bearer {rsp['access_token']}")
+    rv = client.get('/api/user', headers=headers, follow_redirects=True)
+    rsp = rv.get_json()
+    assert len(rsp) == 4
+    assert "selena" in [d.get("username") for d in rsp]

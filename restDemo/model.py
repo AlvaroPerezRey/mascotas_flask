@@ -6,7 +6,7 @@ from sqlalchemy_utils import database_exists
 db = SQLAlchemy()
 
 
-def init_db(app, guard):
+def init_db(app, guard, testing=False):
     """
     Initializes database
 
@@ -14,7 +14,7 @@ def init_db(app, guard):
     :param guard: praetorian object for password hashing if seeding needed
     """
     db.init_app(app)
-    if not database_exists(app.config['SQLALCHEMY_DATABASE_URI']):
+    if testing or not database_exists(app.config['SQLALCHEMY_DATABASE_URI']):
         # if there is no database file
         # migrate model
         db.create_all(app=app)
