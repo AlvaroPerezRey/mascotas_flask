@@ -65,12 +65,14 @@ class UserListController(Resource):
 class RolesListController(Resource):
     @flask_praetorian.auth_required
     def get(self):
-        # using custom SQL
+        # using custom SQL. Similar to php's prepare statement
         statement = text("""
             select role.name, count(user.id) as members from user
                 join roles_users ru on user.id = ru.user_id
                 join role on ru.role_id = role.id
                 group by role.name
             """)
+        # execute statement
         result = db.session.execute(statement)
+        # result is not serializable, we use a dictionary instead
         return jsonify({r['name']: r['members'] for r in result})
