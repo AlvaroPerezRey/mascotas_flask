@@ -3,7 +3,11 @@ from flask import request, jsonify, current_app
 from flask_restx import abort, Resource, Namespace
 
 from sqlalchemy.sql import text
+<<<<<<< HEAD
 from model import User, db, UserSchema
+=======
+from model import User, Role, db, UserSchema #, roles_users
+>>>>>>> f0d090b38d072d3278f9a7350e538593a75143ee
 
 # namespace declaration
 api_user = Namespace("Users", "Users management")
@@ -72,6 +76,15 @@ class UserListController(Resource):
 class RolesListController(Resource):
     @flask_praetorian.auth_required
     def get(self):
+        # consulta directa con SQLAlchemy.orm, sin testar
+        # from sqlalchemy.orm   import  aliased
+        # from sqlalchemy       import and_, or_, func
+        
+        # # aliased() is used to avoid SQL injection
+
+        # members=aliased(db.session.query(Role.name, func.count(User.id)))
+        # ru=aliased(roles_users)
+        #q = db.Query(members,ru).join(ru, and_(ru.c.role_id==members.c.id, ru.c.user_id==User.id)).group_by(members.c.name)
         # using custom SQL. Similar to php's prepare statement
         statement = text("""
             select role.name, count(user.id) as members from user
