@@ -3,11 +3,9 @@ from flask import request, jsonify, current_app
 from flask_restx import abort, Resource, Namespace
 
 from sqlalchemy.sql import text
-<<<<<<< HEAD
 from model import User, db, UserSchema
-=======
 from model import User, Role, db, UserSchema #, roles_users
->>>>>>> f0d090b38d072d3278f9a7350e538593a75143ee
+
 
 # namespace declaration
 api_user = Namespace("Users", "Users management")

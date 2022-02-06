@@ -40,6 +40,8 @@ class OwnerListController(Resource):
         return OwnerSchema(many=True).dump(Owner.query.all())
 
     @flask_praetorian.roles_accepted("admin", "editor")
+    @api_owner.expect(OwnerSchema().get_model(api_owner))
+    @api_owner.response(201, "Because I ordered it", OwnerSchema().get_model(api_owner))
     def post(self):
         owner = OwnerSchema().load(request.json)
         db.session.add(owner)

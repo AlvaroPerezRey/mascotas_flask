@@ -1,3 +1,4 @@
+from flask import current_app
 from flask_sqlalchemy import SQLAlchemy
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema, fields
 from sqlalchemy_utils import database_exists
@@ -238,11 +239,24 @@ class Pet(db.Model):
 
 # Marshmallow schemas definition
 class SchemaDocSwagger:
-    def get_model(self, api):
-        my_fields = {field.title(): restx_fields.String for field in self.fields}
-        for field in self.fields:
-            print(field)
-        return api.model(str(self.__class__), my_fields)
+    def transport_field_class(self, field, api, nested):
+        if "String" in str(type(field)):
+            return restx_fields.String
+        if "Boolean" in str(type(field)):
+            return restx_fields.Boolean
+        if nested:
+            return restx_fields.Integer
+        if "Nested" in str(type(field)):
+            return restx_fields.List(restx_fields.Nested(field.schema.get_model(api, nested=True)))
+        if "RelatedList" in str(type(field)):
+            return restx_fields.List(restx_fields.Integer)
+
+        return restx_fields.Integer
+
+    def get_model(self, api, nested=False):
+        my_fields = {field_name: self.transport_field_class(field, api, nested)
+                     for field_name, field in self.fields.items()}
+        return api.model(self.__class__.__name__, my_fields)
 
 
 class UserSchema(SQLAlchemyAutoSchema, SchemaDocSwagger):
@@ -253,6 +267,8 @@ class UserSchema(SQLAlchemyAutoSchema, SchemaDocSwagger):
         load_instance = True
         sqla_session = db.session
 
+    roles = fields.Nested(lambda: RoleSchema(exclude=("users", )), many=True)
+
 
 class RoleSchema(SQLAlchemyAutoSchema, SchemaDocSwagger):
     class Meta:
@@ -261,10 +277,7 @@ class RoleSchema(SQLAlchemyAutoSchema, SchemaDocSwagger):
         load_instance = True
         sqla_session = db.session
 
-    users = fields.Nested(UserSchema, many=True)
-
-
-UserSchema.roles = fields.Nested(RoleSchema, many=True)
+    users = fields.Nested(UserSchema(exclude=("roles", )), many=True)
 
 
 class OwnerSchema(SQLAlchemyAutoSchema, SchemaDocSwagger):
