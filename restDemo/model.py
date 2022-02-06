@@ -1,6 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema, fields
 from sqlalchemy_utils import database_exists
+from flask_restx import fields as restx_fields
 
 # instantiate SQLAlchemy object
 db = SQLAlchemy()
@@ -12,6 +13,7 @@ def init_db(app, guard, testing=False):
 
     :param app: flask app
     :param guard: praetorian object for password hashing if seeding needed
+    :param testing: True if testing (always migrate)
     """
     db.init_app(app)
     if testing or not database_exists(app.config['SQLALCHEMY_DATABASE_URI']):
@@ -235,7 +237,15 @@ class Pet(db.Model):
 
 
 # Marshmallow schemas definition
-class UserSchema(SQLAlchemyAutoSchema):
+class SchemaDocSwagger:
+    def get_model(self, api):
+        my_fields = {field.title(): restx_fields.String for field in self.fields}
+        for field in self.fields:
+            print(field)
+        return api.model(str(self.__class__), my_fields)
+
+
+class UserSchema(SQLAlchemyAutoSchema, SchemaDocSwagger):
     class Meta:
         # model class for the schema
         model = User
@@ -244,7 +254,7 @@ class UserSchema(SQLAlchemyAutoSchema):
         sqla_session = db.session
 
 
-class RoleSchema(SQLAlchemyAutoSchema):
+class RoleSchema(SQLAlchemyAutoSchema, SchemaDocSwagger):
     class Meta:
         model = Role
         include_relationships = True
@@ -257,7 +267,7 @@ class RoleSchema(SQLAlchemyAutoSchema):
 UserSchema.roles = fields.Nested(RoleSchema, many=True)
 
 
-class OwnerSchema(SQLAlchemyAutoSchema):
+class OwnerSchema(SQLAlchemyAutoSchema, SchemaDocSwagger):
     class Meta:
         model = Owner
         include_relationships = True
@@ -265,7 +275,7 @@ class OwnerSchema(SQLAlchemyAutoSchema):
         sqla_session = db.session
 
 
-class PetSchema(SQLAlchemyAutoSchema):
+class PetSchema(SQLAlchemyAutoSchema, SchemaDocSwagger):
     class Meta:
         model = Pet
         include_relationships = True
@@ -273,7 +283,7 @@ class PetSchema(SQLAlchemyAutoSchema):
         sqla_session = db.session
 
 
-class PlayerSchema(SQLAlchemyAutoSchema):
+class PlayerSchema(SQLAlchemyAutoSchema, SchemaDocSwagger):
     class Meta:
         model = Player
         include_relationships = True

@@ -17,7 +17,6 @@ def create_app(config_file='config.py'):
     app = Flask(__name__)
 
     # get configuration parameters
-    # TODO: initial config for tests
     app.config.from_pyfile(config_file)
 
     # instantiate oauth object
@@ -118,7 +117,7 @@ def create_app(config_file='config.py'):
         user = User.lookup(profile.get("login"))
         # get JWT from praetorian
         ret = {"access_token": guard.encode_jwt_token(user)}
-        # return JWT
+        # return JWTUserSchema
         return jsonify(ret), 200
     return app
 

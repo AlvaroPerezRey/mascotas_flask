@@ -1,9 +1,9 @@
 import flask_praetorian
-from flask import request, jsonify
+from flask import request, jsonify, current_app
 from flask_restx import abort, Resource, Namespace
 
 from sqlalchemy.sql import text
-from model import User, Role, db, UserSchema
+from model import User, db, UserSchema
 
 # namespace declaration
 api_user = Namespace("Users", "Users management")
@@ -52,9 +52,16 @@ class UserListController(Resource):
         # User.query.all(): list all users
         return UserSchema(many=True).dump(User.query.all())
 
-    @flask_praetorian.roles_required("admin")
+    @flask_praetorian.auth_required
+    @api_user.expect(UserSchema().get_model(api_user))
+    @api_user.response(201, "Because I ordered it", UserSchema().get_model(api_user))
     def post(self):
         user = UserSchema().load(request.json)
+        # hash_password
+        guard = flask_praetorian.Praetorian()
+        guard.init_app(current_app, User)
+        user.hashed_password = guard.hash_password(user.hashed_password)
+
         # add new user
         db.session.add(user)
         db.session.commit()
