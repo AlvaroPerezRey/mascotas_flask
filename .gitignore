@@ -1,1 +1,4 @@
-restDemo/env/
+# Project exclude paths
+venv/
+env/
+*.pyc
